@@ -1,5 +1,7 @@
 import argparse
 import os
+import glob
+import re
 
 from fpdf import FPDF, Align
 
@@ -57,6 +59,14 @@ def _generate_pdf_path(
     return f"{output_dir}/pdf/{start_page}_{end_page}.pdf"
 
 
+def get_page_number(filename: str) -> int:
+    """ファイル名からページ番号（数値）を抽出します。"""
+    match = re.search(r'(\d+)\.png$', filename)
+    if match:
+        return int(match.group(1))
+    return 0
+
+
 def image_to_pdf(
     start_page: int,
     end_page: int,
@@ -66,35 +76,47 @@ def image_to_pdf(
     """
     複数の画像を1つのPDFとして保存します。
     ※この機能は `fpdf2` ライブラリを使用しています。
+    ディレクトリ内のすべてのPNG画像を対象とし、ページ幅に合わせてスケーリングします。
 
     Args:
-        start_page (int): 開始ページ番号。
-        end_page (int): 終了ページ番号。
+        start_page (int): 開始ページ番号（PDFファイル名の生成に使用される場合があります）。
+        end_page (int): 終了ページ番号（PDFファイル名の生成に使用される場合があります）。
         output_dir (str): 画像のディレクトリ。
         chapter_name (str): 章の名前。
     """
     print("画像をPDFに変換します")
+
+    image_dir = os.path.join(output_dir, "image")
+    # すべてのPNGファイルを取得
+    all_images = glob.glob(os.path.join(image_dir, "*.png"))
+
+    if not all_images:
+        print(f"警告: 画像が見つかりません: {image_dir}")
+        return
+
+    # ページ番号順にソート
+    sorted_images = sorted(all_images, key=get_page_number)
+
+    # 実際の開始・終了ページを取得（PDFファイル名用）
+    actual_start = get_page_number(sorted_images[0])
+    actual_end = get_page_number(sorted_images[-1])
+
     pdf = FPDF()
     pdf.set_auto_page_break(False)
 
-    for page in range(start_page, end_page+1):
-        image = generate_image_path(output_dir, page, chapter_name)
-        if not os.path.exists(image):
-            print(f"警告: 画像が見つかりません: {image}")
-            continue
-
+    for image_path in sorted_images:
         pdf.add_page()
-        # 画像を中央に配置。w=pdf.epw でページ幅いっぱいにすることも可能。
-        # Align.C は fpdf2 でサポートされています。
         try:
-            pdf.image(image, x=Align.C)
+            # 画像を中央に配置し、ページ幅(epw)に合わせてスケーリング
+            pdf.image(image_path, x=Align.C, w=pdf.epw)
+            print(f"{image_path} を追加しました")
         except Exception as e:
-            print(f"画像追加エラー: {e}")
+            print(f"画像追加エラー: {e} ({image_path})")
             continue
 
-        print(f"{image} を追加しました")
+    # ファイル名は実際の内容に基づいて生成するのが適切
+    pdf_path = _generate_pdf_path(output_dir, actual_start, actual_end, chapter_name)
 
-    pdf_path = _generate_pdf_path(output_dir, start_page, end_page, chapter_name)
     try:
         pdf.output(pdf_path)
         print(f"PDFを {pdf_path} に保存しました")

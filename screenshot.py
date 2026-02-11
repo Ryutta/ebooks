@@ -17,7 +17,7 @@ def _parse_args():
     parser.add_argument('-e', '--end_page', help='終了ページ', type=int, required=True)
     parser.add_argument('-o', '--output_dir', help='出力ディレクトリ', default='.')
     parser.add_argument('-c', '--chapter_name', help='章などの名前')
-    parser.add_argument('-k', '--key', help='ページ送りキー (right または left)', default='right', choices=['right', 'left'])
+    parser.add_argument('-k', '--key', help='ページ送りキー (right または left)', default=None, choices=['right', 'left'])
 
     return parser.parse_args()
 
@@ -152,7 +152,10 @@ def _main():
     # region = (左上のx座標, 左上のy座標, スクショの横幅, スクショの縦幅)
     region = decide_capture_region()
 
-    capture_screen(start_page, end_page, output_dir, chapter_name, region, key)
+    if key:
+        capture_screen(start_page, end_page, output_dir, chapter_name, region, key)
+    else:
+        capture_screen(start_page, end_page, output_dir, chapter_name, region)
 
 
 if __name__ == "__main__":

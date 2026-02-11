@@ -17,6 +17,7 @@ def _parse_args():
     parser.add_argument('-e', '--end_page', help='終了ページ', type=int, required=True)
     parser.add_argument('-o', '--output_dir', help='出力ディレクトリ', default='.')
     parser.add_argument('-c', '--chapter_name', help='章などの名前')
+    parser.add_argument('-k', '--key', help='ページ送りキー (right または left)', default='right', choices=['right', 'left'])
 
     return parser.parse_args()
 
@@ -81,6 +82,7 @@ def capture_screen(
     output_dir: str,
     chapter_name: str,
     region: tuple[int, int, int, int],
+    next_page_key: str = 'right',
 ) -> None:
     """
     指定された範囲のスクリーンショットを指定ページ数分撮影し、保存します。
@@ -92,9 +94,9 @@ def capture_screen(
         output_dir (str): 画像の保存先ディレクトリ。
         chapter_name (str): 章の名前（ファイル名に使用）。
         region (tuple[int, int, int, int]): スクリーンショットの範囲 (x, y, width, height)。
+        next_page_key (str): 次のページへ進むキー（'right' or 'left'）。
     """
     shot_span = 2  # 撮影間隔（秒）
-    next_page_key = 'right'  # 次のページへ進むキー
 
     print(f"キャプチャ範囲: {region}")
 
@@ -139,6 +141,7 @@ def _main():
     end_page = args.end_page
     output_dir = args.output_dir
     chapter_name = args.chapter_name
+    key = args.key
 
     image_dir = os.path.join(output_dir, "image")
     for dir_path in [output_dir, image_dir]:
@@ -149,7 +152,7 @@ def _main():
     # region = (左上のx座標, 左上のy座標, スクショの横幅, スクショの縦幅)
     region = decide_capture_region()
 
-    capture_screen(start_page, end_page, output_dir, chapter_name, region)
+    capture_screen(start_page, end_page, output_dir, chapter_name, region, key)
 
 
 if __name__ == "__main__":

@@ -15,6 +15,7 @@
 *   以下のPythonライブラリ:
     *   `pyautogui` (スクリーンショット撮影、キーボード操作用)
     *   `fpdf2` (PDF作成用)
+    *   `Pillow` (画像のサイズ判定用)
 
 ## インストール方法
 
@@ -39,7 +40,13 @@ pip install pyautogui fpdf2
     sudo apt-get install scrot python3-tk python3-dev
     ```
 
-## 使い道
+## 使い道と特徴
+
+### PDFの自動向き調整
+PDF作成時、保存された画像の縦横比を自動で判別します。
+画像が横長の場合は「横向き(Landscape)」、縦長の場合は「縦向き(Portrait)」のページとして自動的にPDFに追加されるため、画面いっぱいに画像が配置された見やすいPDFが作成されます。
+
+## 使い方
 
 ターミナル（コマンドプロンプト）から `exec_all.py` を実行します。
 

@@ -109,10 +109,10 @@ def image_to_pdf(
         try:
             with Image.open(image_path) as img:
                 width, height = img.size
-
+            
             orientation = "L" if width > height else "P"
             pdf.add_page(orientation=orientation)
-
+            
             # 画像を中央に配置し、ページ幅(epw)に合わせてスケーリング
             # fpdf2のepwはページの有効幅（マージンを除いた幅）
             pdf.image(image_path, x=Align.C, w=pdf.epw)

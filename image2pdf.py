@@ -4,6 +4,7 @@ import glob
 import re
 
 from fpdf import FPDF, Align
+from PIL import Image
 
 def _parse_args():
     parser = argparse.ArgumentParser()
@@ -105,9 +106,15 @@ def image_to_pdf(
     pdf.set_auto_page_break(False)
 
     for image_path in sorted_images:
-        pdf.add_page()
         try:
+            with Image.open(image_path) as img:
+                width, height = img.size
+
+            orientation = "L" if width > height else "P"
+            pdf.add_page(orientation=orientation)
+
             # 画像を中央に配置し、ページ幅(epw)に合わせてスケーリング
+            # fpdf2のepwはページの有効幅（マージンを除いた幅）
             pdf.image(image_path, x=Align.C, w=pdf.epw)
             print(f"{image_path} を追加しました")
         except Exception as e:
